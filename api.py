@@ -1,27 +1,27 @@
 import json
-import os
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import parse_qs
-
-# Load marks from a JSON file
-with open(os.path.join(os.path.dirname(__file__), '../marks.json')) as f:
-    MARKS = json.load(f)
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # Parse query parameters
-        query = parse_qs(self.path.split('?')[-1])
-        names = query.get("name", [])
-
-        # Fetch marks for the provided names
-        response = {"marks": [MARKS.get(name, 0) for name in names]}
-
-        # Enable CORS
+        # Set CORS headers to allow cross-origin requests
         self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Content-type','application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')  # Allow all origins
         self.end_headers()
-
-        # Send JSON response
+        
+        # Handle query parameters (e.g., ?name=X&name=Y)
+        query_params = self.get_query_params()
+        marks = [self.get_marks(name) for name in query_params]
+        
+        response = {"marks": marks}
         self.wfile.write(json.dumps(response).encode('utf-8'))
-        return
+
+    def get_query_params(self):
+        query = self.path.split('?')[1] if '?' in self.path else ''
+        return [param.split('=')[1] for param in query.split('&') if param.startswith('name=')]
+
+    def get_marks(self, name):
+        # Simulating mark retrieval for demonstration
+        marks = {"X": 10, "Y": 20}  # Example marks for names
+        return marks.get(name, 0)
+
