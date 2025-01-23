@@ -1,15 +1,15 @@
 import json
 from http.server import BaseHTTPRequestHandler
 
-# Sample data for marks of students
-student_marks = {
-    "X": 83,
-    "Y": 55,
-    "Z": 24,
-    "A": 8,
-    "B": 0
-}
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type','application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({"message": "Hello!"}).encode('utf-8'))
+        return
 
+'''
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Parse query parameters
@@ -36,3 +36,4 @@ class handler(BaseHTTPRequestHandler):
             else:
                 query[key] = [value]
         return query
+'''
