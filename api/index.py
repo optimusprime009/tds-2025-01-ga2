@@ -1,27 +1,38 @@
 import json
 from http.server import BaseHTTPRequestHandler
 
+# Sample data for marks of students
+student_marks = {
+    "X": 83,
+    "Y": 55,
+    "Z": 24,
+    "A": 8,
+    "B": 0
+}
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # Set CORS headers to allow cross-origin requests
+        # Parse query parameters
+        query = self.parse_query_params()
+        
+        # Get the marks for the requested names
+        marks = [student_marks.get(name, 0) for name in query.get('name', [])]
+        
+        # Return the response as JSON
         self.send_response(200)
-        self.send_header('Content-type','application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')  # Allow all origins
+        self.send_header('Content-type', 'application/json')
         self.end_headers()
-        
-        # Handle query parameters (e.g., ?name=X&name=Y)
-        query_params = self.get_query_params()
-        marks = [self.get_marks(name) for name in query_params]
-        
-        response = {"marks": marks}
-        self.wfile.write(json.dumps(response).encode('utf-8'))
+        response = json.dumps({"marks": marks})
+        self.wfile.write(response.encode('utf-8'))
 
-    def get_query_params(self):
-        query = self.path.split('?')[1] if '?' in self.path else ''
-        return [param.split('=')[1] for param in query.split('&') if param.startswith('name=')]
-
-    def get_marks(self, name):
-        # Simulating mark retrieval for demonstration
-        marks = {"X": 10, "Y": 20}  # Example marks for names
-        return marks.get(name, 0)
-
+    def parse_query_params(self):
+        # Parse query parameters into a dictionary
+        query_string = self.path.split('?')[1] if '?' in self.path else ''
+        query = {}
+        for param in query_string.split('&'):
+            key, value = param.split('=')
+            if key in query:
+                query[key].append(value)
+            else:
+                query[key] = [value]
+        return query
